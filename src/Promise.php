@@ -63,7 +63,5 @@ class Promise
         if ($this->runned === false) {
             $this->run();
         }
-        $this->catch = $this->finally = $this->activator = null;
-        $this->then = [];
     }
 }
