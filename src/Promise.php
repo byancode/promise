@@ -10,8 +10,8 @@ class Promise
 
     const signal = '36c64d72-f55c-5c61-9aad-563f0462261a';
     protected $then = [];
-    protected $catch = [];
-    protected $finally = [];
+    protected $catch;
+    protected $finally;
     protected $runned = false;
     protected $activator;
 
@@ -26,11 +26,11 @@ class Promise
         return $this;
     }
     function catch (callable $callback) {
-        $this->catch[] = $callback;
+        $this->catch = $callback;
         return $this;
     }
     function finally (callable $callback) {
-        $this->finally[] = $callback;
+        $this->finally = $callback;
         return $this;
     }
 
@@ -48,21 +48,22 @@ class Promise
                 throw new \Exception($message);
             });
         } catch (\Exception $th) {
+            $callback = $this->catch;
             $message = $th->getMessage();
             if ($message !== self::signal) {
-                foreach ($this->catch as $callback) {
-                    $callback($message);
-                }
+                is_callable($callback) && $callback($message);
             }
         }
-        foreach ($this->finally as $callback) {
-            $callback();
-        }
+
+        $callback = $this->finally;
+        is_callable($callback) && $callback();
     }
     public function __destruct()
     {
         if ($this->runned === false) {
             $this->run();
         }
+        $this->catch = $this->finally = $this->activator = null;
+        $this->then = [];
     }
 }
