@@ -1,4 +1,4 @@
-# Asynchronous Multi Curl
+# Simple promise
 
 ## Installation
 
