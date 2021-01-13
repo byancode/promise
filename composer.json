@@ -1,0 +1,20 @@
+{
+	"name": "byancode/promise",
+	"description": "Promise Async",
+	"type": "php",
+	"authors": [
+		{
+			"name": "byancode",
+			"email": "byancode@gmail.com"
+		}
+	],
+	"require": {},
+	"autoload": {
+		"files": [
+			"src/Promise.php"
+		],
+		"psr-4": {
+			"Byancode\\": "src"
+		}
+	}
+}
