@@ -9,6 +9,8 @@ class Promise
     {
         return new self($activator);
     }
+    const RESOLVE_ID = 'd1044cdf-1bf9-5fb7-b03d-dfe1c6ed657b';
+    const REJECT_ID = 'd1c8ddfa-7645-5b1d-98c3-d185312e927b';
 
     protected $id;
     protected $then = [];
@@ -16,11 +18,11 @@ class Promise
     protected $finally;
     protected $runned = false;
     protected $activator;
+    public $message = null;
 
     public function __construct(callable $activator)
     {
         $this->activator = $activator;
-        $this->id = 'promise:' . mt_rand(1, 9000000);
     }
 
     public function then(callable $callback)
@@ -44,29 +46,32 @@ class Promise
         foreach ($this->then as $callback) {
             $data = $callback($data);
         }
-        throw new Exception($this->id, 8754);
+        throw new Exception(self::RESOLVE_ID);
     }
 
     public function reject(string $message = null)
     {
         $callback = $this->catch ?? function () {};
-        $callback($message);
+        $callback($this->message = $message);
         $this->catch = null;
-        throw new Exception($message ?? 'Promise reject', 8755);
+        throw new Exception(self::REJECT_ID);
     }
 
     public function run()
     {
         $this->runned = true;
-        $activator = $this->activator ?? function () {};
         try {
+            $activator = $this->activator ?? function () {};
             $activator([$this, 'resolve'], [$this, 'reject']);
-        } catch (Exception $th) {
-            $message = $th->getMessage();
-            $callback = $this->catch ?? function () {};
-            if ($message !== $this->id) {
+        } catch (Exception $exception) {
+            $message = $exception->getMessage();
+            if ($message === self::REJECT_ID) {
+                $callback = $this->catch ?? function () {};
                 $callback($message);
+            } elseif ($message !== self::RESOLVE_ID) {
+                throw $exception;
             }
+
         }
         $callback = $this->finally;
         is_callable($callback) && $callback();
