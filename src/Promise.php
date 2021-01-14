@@ -2,17 +2,25 @@
 namespace Byancode;
 
 use Exception;
+use Throwable;
 
 class Promise
 {
+    public static function contain(Throwable $th)
+    {
+        return in_array($th->getMessage(), [
+            self::RESOLVE_ID,
+            self::REJECT_ID,
+        ]);
+    }
     public static function create(callable $activator)
     {
         return new self($activator);
     }
+
     const RESOLVE_ID = 'd1044cdf-1bf9-5fb7-b03d-dfe1c6ed657b';
     const REJECT_ID = 'd1c8ddfa-7645-5b1d-98c3-d185312e927b';
 
-    protected $id;
     protected $then = [];
     protected $catch;
     protected $finally;
