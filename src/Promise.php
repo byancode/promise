@@ -49,6 +49,9 @@ class Promise
 
     public function reject($message = null)
     {
+        $callback = $this->catch ?? function () {};
+        $callback($message);
+        $this->catch = null;
         throw new Exception($message ?? 'Promise reject', 8755);
     }
 
