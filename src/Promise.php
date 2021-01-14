@@ -1,6 +1,8 @@
 <?php
 namespace Byancode;
 
+use Exception;
+
 class Promise
 {
     public static function create(callable $activator)
@@ -8,7 +10,7 @@ class Promise
         return new self($activator);
     }
 
-    const signal = '36c64d72-f55c-5c61-9aad-563f0462261a';
+    protected $id;
     protected $then = [];
     protected $catch;
     protected $finally;
@@ -18,6 +20,7 @@ class Promise
     public function __construct(callable $activator)
     {
         $this->activator = $activator;
+        $this->id = 'promise:' . mt_rand(1, 9000000);
     }
 
     public function then(callable $callback)
@@ -25,13 +28,28 @@ class Promise
         $this->then[] = $callback;
         return $this;
     }
+
     function catch (callable $callback) {
         $this->catch = $callback;
         return $this;
     }
+
     function finally (callable $callback) {
         $this->finally = $callback;
         return $this;
+    }
+
+    public function resolve($data = null)
+    {
+        foreach ($this->then as $callback) {
+            $data = $callback($data);
+        }
+        throw new Exception($this->id, 8754);
+    }
+
+    public function reject($message = null)
+    {
+        throw new Exception($message ?? 'Promise reject', 8755);
     }
 
     public function run()
@@ -39,25 +57,18 @@ class Promise
         $this->runned = true;
         $activator = $this->activator ?? function () {};
         try {
-            $activator(function ($data) {
-                foreach ($this->then as $callback) {
-                    $data = $callback($data);
-                }
-                throw new \Exception(self::signal);
-            }, function ($message) {
-                throw new \Exception($message);
-            });
-        } catch (\Exception $th) {
-            $callback = $this->catch;
+            $activator([$this, 'resolve'], [$this, 'reject']);
+        } catch (Exception $th) {
             $message = $th->getMessage();
-            if ($message !== self::signal) {
-                is_callable($callback) && $callback($message);
+            $callback = $this->catch ?? function () {};
+            if ($message !== $this->id) {
+                $callback($message);
             }
         }
-
         $callback = $this->finally;
         is_callable($callback) && $callback();
     }
+
     public function __destruct()
     {
         if ($this->runned === false) {

@@ -5,18 +5,13 @@ use Byancode\Promise;
 
 Promise::create(function ($resolve, $reject) {
     $resolve('es un error');
+    echo 'test' . PHP_EOL;
 })->then(function ($data) {
-    echo $data;
-})->catch(function ($message) {
-    echo $message;
+    echo $data . PHP_EOL;
 });
 
 Promise::create(function ($resolve, $reject) {
-    $resolve('es un error');
+    $resolve('hola a todos');
 })->then(function ($data) {
-    echo $data;
-})->catch(function ($message) {
-    echo $message;
+    echo $data . PHP_EOL;
 });
-
-echo "testeo\n";
