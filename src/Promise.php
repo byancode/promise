@@ -13,6 +13,7 @@ class Promise
             self::REJECT_ID,
         ]);
     }
+
     public static function create(callable $activator)
     {
         return new self($activator);
@@ -48,12 +49,17 @@ class Promise
         $this->finally = $callback;
         return $this;
     }
-
+    protected function finalize()
+    {
+        $callback = $this->finally;
+        is_callable($callback) && $callback();
+    }
     public function resolve($data = null)
     {
         foreach ($this->then as $callback) {
             $data = $callback($data);
         }
+        $this->finalize();
         throw new Exception(self::RESOLVE_ID);
     }
 
@@ -62,15 +68,14 @@ class Promise
         $callback = $this->catch ?? function () {};
         $callback($this->message = $message);
         $this->catch = null;
+        $this->finalize();
         throw new Exception(self::REJECT_ID);
     }
 
-    public function run()
+    public function wrap(callable $activator)
     {
-        $this->runned = true;
         try {
-            $activator = $this->activator ?? function () {};
-            $activator([$this, 'resolve'], [$this, 'reject']);
+            $activator($this);
         } catch (Exception $exception) {
             $message = $exception->getMessage();
             if ($message === self::REJECT_ID) {
@@ -79,10 +84,37 @@ class Promise
             } elseif ($message !== self::RESOLVE_ID) {
                 throw $exception;
             }
-
         }
-        $callback = $this->finally;
-        is_callable($callback) && $callback();
+    }
+
+    public function resolver($data = null)
+    {
+        return function () use ($data) {
+            $this->wrap(function () use ($data) {
+                $args = func_get_args();
+
+                if (isset($data) === true) {
+                    array_unshift($args, $data);
+                }
+
+                call_user_func_array([$this, 'resolve'], $args);
+            });
+        };
+    }
+
+    public function rejector($message)
+    {
+        return function () use ($message) {
+            $this->wrap(function () use ($message) {
+                $this->reject($message);
+            });
+        };
+    }
+
+    public function run()
+    {
+        $this->runned = true;
+        $this->wrap($this->activator);
     }
 
     public function __destruct()
