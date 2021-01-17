@@ -3,8 +3,8 @@ include './src/Promise.php';
 
 use Byancode\Promise;
 
-Promise::create(function ($resolve, $reject) {
-    $resolve('es un error');
+Promise::create(function ($promise) {
+    $promise->resolve('es un error');
     echo 'test' . PHP_EOL;
 })->then(function ($data) {
     return 'tast';
@@ -12,8 +12,8 @@ Promise::create(function ($resolve, $reject) {
     echo $data . PHP_EOL;
 });
 
-Promise::create(function ($resolve, $reject) {
-    $resolve('hola a todos');
+Promise::create(function ($promise) {
+    $promise->resolve('hola a todos');
 })->then(function ($data) {
     echo $data . PHP_EOL;
 });
