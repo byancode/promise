@@ -11,13 +11,17 @@ composer require byancode/promise
 ## Usage
 
 ``` php
-new Byancode\Promise(function ($resolve, $reject) {
+new Byancode\Promise(function ($promise) {
     if (true) {
-        $resolve([
+        echo 'hola mundo';
+        $promise->resolve([
             'success' => true
         ]);
+        echo 'esto no se imprime';
     } else {
-        $reject('es un error');
+        echo 'se produjo un error';
+        $promise->reject('es un error');
+        echo 'esto no se imprime';
     }
 })->then(function ($data) {
     print_r($data)
