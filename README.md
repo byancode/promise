@@ -42,7 +42,7 @@ Promise::create(function ($promise) {
     )->then(function($content) use ($promise) {
         $content = str_replace('div', 'my-div');
         $promise->resolve($content);
-    })->then(function() use ($promise) {
+    })->catch(function() use ($promise) {
         $promise->reject('se produjo un error');
     });
 })->then(function ($data) {
@@ -65,8 +65,8 @@ RequestCurl::trace(function(){
             $promise->wrap(function($promise) use ($content) {
                 $content = str_replace('div', 'my-div');
                 $promise->resolve($content);
-            }):
-        })->then(function() use ($promise) {
+            });
+        })->catch(function() use ($promise) {
             $promise->wrap(function($promise) {
                 $promise->reject('se produjo un error');
             });
@@ -85,7 +85,7 @@ RequestCurl::trace(function(){
                 $content = str_replace('div', 'my-div');
                 $promise->resolve($content);
             }):
-        })->then(function() use ($promise) {
+        })->catch(function() use ($promise) {
             $promise->wrap(function($promise) {
                 $promise->reject('se produjo un error');
             });
