@@ -1,6 +1,6 @@
 {
 	"name": "byancode/promise",
-	"description": "Promise sync",
+	"description": "Promise Async",
 	"type": "php",
 	"authors": [
 		{
